@@ -1,8 +1,9 @@
 package ru.javaops.masterjava.matrix;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * gkislin
@@ -15,6 +16,37 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
+        List<Future<int[][]>> list = new ArrayList<>();
+
+        int part = matrixSize / MainMatrix.THREAD_NUMBER;
+
+        for (int x = 0; x < matrixSize; x += part) {
+            final int start = x;
+            final int end = x + part;
+
+            Future<int[][]> future = executor.submit(() -> {
+                int[][] partC = new int[matrixSize][matrixSize];
+                for (int i = start; i < end; i++) {
+                    for (int k = 0; k < matrixSize; k++) {
+                        for (int j = 0; j < matrixSize; j++) {
+                            partC[i][j] += matrixA[i][k] * matrixB[k][j];
+                        }
+                    }
+                }
+                return partC;
+            });
+            list.add(future);
+        }
+
+        // retrieve result
+        int start = 0;
+        for (Future<int[][]> future : list) {
+            for (int i = start; i < start + part; i++) {
+                matrixC[i] = future.get()[i];
+            }
+            start += part;
+        }
+
         return matrixC;
     }
 
@@ -23,15 +55,51 @@ public class MatrixUtil {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
 
+        //        no enhancement; time = 1.5
+//        for (int i = 0; i < matrixSize; i++) {
+//            for (int j = 0; j < matrixSize; j++) {
+//                int sum = 0;
+//                for (int k = 0; k < matrixSize; k++) {
+//                    sum += matrixA[i][k] * matrixB[k][j];
+//                }
+//                matrixC[i][j] = sum;
+//            }
+//        }
+
+        //        enhancement 1 matrix transpose; time = 0.412
+        int[][] matrixBTranspose = new int[matrixSize][matrixSize];
+        for(int i = 0; i < matrixSize; i++)
+            for(int j = 0; j < matrixSize; j++)
+                matrixBTranspose[j][i] = matrixB[i][j];
+
         for (int i = 0; i < matrixSize; i++) {
             for (int j = 0; j < matrixSize; j++) {
                 int sum = 0;
                 for (int k = 0; k < matrixSize; k++) {
-                    sum += matrixA[i][k] * matrixB[k][j];
+                    sum += matrixA[i][k] * matrixBTranspose[j][k];
                 }
                 matrixC[i][j] = sum;
             }
         }
+
+        //        enhancement 2 cycle enhancement, time = 0.466
+//        int thatColumn[] = new int[matrixSize];
+//
+//        for (int j = 0; j < matrixSize; j++) {
+//            for (int k = 0; k < matrixSize; k++) {
+//                thatColumn[k] = matrixB[k][j];
+//            }
+//
+//            for (int i = 0; i < matrixSize; i++) {
+//                int thisRow[] = matrixA[i];
+//                int sum = 0;
+//                for (int k = 0; k < matrixSize; k++) {
+//                    sum += thisRow[k] * thatColumn[k];
+//                }
+//                matrixC[i][j] = sum;
+//            }
+//        }
+
         return matrixC;
     }
 
