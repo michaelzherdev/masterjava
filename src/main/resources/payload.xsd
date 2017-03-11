@@ -1,56 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE xs:schema [
+                <!ELEMENT xs:schema (xs:element|xs:simpleType|xs:complexType)*>
+                <!ATTLIST xs:schema
+                        xmlns CDATA #REQUIRED
+                        xmlns:xs CDATA #REQUIRED
+                        targetNamespace CDATA #REQUIRED
+                        elementFormDefault CDATA #REQUIRED
+                        attributeFormDefault CDATA #REQUIRED>
+                <!ELEMENT xs:element (xs:complexType)*>
+                <!ATTLIST xs:element
+                        name CDATA #IMPLIED
+                        ref CDATA #IMPLIED
+                        type CDATA #IMPLIED>
+                <!ELEMENT xs:complexType (xs:all|xs:sequence|xs:attribute|xs:simpleContent)*>
+                <!ATTLIST xs:complexType
+                        name CDATA #IMPLIED>
+                <!ELEMENT xs:all (xs:element)*>
+                <!ELEMENT xs:sequence (xs:element)*>
+                <!ATTLIST xs:sequence
+                        maxOccurs CDATA #IMPLIED
+                        minOccurs CDATA #IMPLIED>
+                <!ELEMENT xs:attribute (#PCDATA)>
+                <!ATTLIST xs:attribute
+                        name CDATA #REQUIRED
+                        type CDATA #REQUIRED
+                        use CDATA #REQUIRED>
+                <!ELEMENT xs:simpleType (xs:restriction)*>
+                <!ATTLIST xs:simpleType
+                        name CDATA #REQUIRED>
+                <!ELEMENT xs:restriction (xs:enumeration)*>
+                <!ATTLIST xs:restriction
+                        base CDATA #REQUIRED>
+                <!ELEMENT xs:enumeration (#PCDATA)>
+                <!ATTLIST xs:enumeration
+                        value CDATA #REQUIRED>
+                <!ELEMENT xs:simpleContent (xs:extension)*>
+                <!ELEMENT xs:extension (xs:attribute)*>
+                <!ATTLIST xs:extension
+                        base CDATA #REQUIRED>
+                ]>
 <xs:schema xmlns="http://javaops.ru"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
            targetNamespace="http://javaops.ru"
            elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-    <xs:element name="Payload">
-        <xs:complexType>
-            <xs:all>
-                <xs:element name="Cities">
-                    <xs:complexType>
-                        <xs:sequence minOccurs="1" maxOccurs="unbounded">
-                            <xs:element ref="City"/>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-                <xs:element name="Users">
-                    <xs:complexType>
-                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
-                            <xs:element ref="User"/>
-                        </xs:sequence>
-                    </xs:complexType>
-                </xs:element>
-            </xs:all>
-        </xs:complexType>
-    </xs:element>
-
-    <xs:element name="User">
-        <xs:complexType>
-            <xs:sequence>
-                <xs:element type="xs:string" name="email"/>
-                <xs:element type="xs:string" name="fullName"/>
-            </xs:sequence>
-            <xs:attribute type="flagType" name="flag" use="required"/>
-            <xs:attribute type="xs:IDREF" name="city" use="required"/>
-        </xs:complexType>
-    </xs:element>
-
-    <xs:simpleType name="flagType">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="active"/>
-            <xs:enumeration value="deleted"/>
-            <xs:enumeration value="superuser"/>
-        </xs:restriction>
-    </xs:simpleType>
-
-    <xs:element name="City" type="cityType"/>
-
-    <xs:complexType name="cityType">
-        <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute type="xs:ID" name="id" use="required"/>
-            </xs:extension>
-        </xs:simpleContent>
+<xs:element name="Payload">
+    <xs:complexType>
+        <xs:all>
+            <xs:element name="Cities">
+                <xs:complexType>
+                    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                        <xs:element ref="City"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Users">
+                <xs:complexType>
+                    <xs:sequence minOccurs="0" maxOccurs="unbounded">
+                        <xs:element ref="User"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="Projects">
+                <xs:complexType>
+                    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                        <xs:element ref="Project"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:all>
     </xs:complexType>
+</xs:element>
+
+<xs:element name="User">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element type="xs:string" name="fullName"/>
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="email" use="required"/>
+        <xs:attribute type="flagType" name="flag" use="required"/>
+        <xs:attribute type="xs:IDREF" name="city" use="required"/>
+        <xs:attribute type="xs:IDREFS" name="groups" use="optional"/>
+    </xs:complexType>
+</xs:element>
+
+<xs:simpleType name="flagType">
+    <xs:restriction base="xs:string">
+        <xs:enumeration value="active"/>
+        <xs:enumeration value="deleted"/>
+        <xs:enumeration value="superuser"/>
+    </xs:restriction>
+</xs:simpleType>
+
+<xs:element name="City" type="cityType"/>
+
+<xs:complexType name="cityType">
+    <xs:simpleContent>
+        <xs:extension base="xs:string">
+            <xs:attribute type="xs:ID" name="id" use="required"/>
+        </xs:extension>
+    </xs:simpleContent>
+</xs:complexType>
+
+<xs:element name="Project">
+    <xs:complexType>
+        <xs:sequence>
+            <xs:element name="Groups">
+                <xs:complexType>
+                    <xs:sequence minOccurs="1" maxOccurs="unbounded">
+                        <xs:element ref="Group"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <!--<xs:element ref="Group"/>-->
+        </xs:sequence>
+        <xs:attribute type="xs:string" name="name" use="required"/>
+        <xs:attribute type="xs:string" name="description" use="required"/>
+    </xs:complexType>
+</xs:element>
+
+<xs:element name="Group">
+    <xs:complexType>
+        <xs:attribute type="xs:ID" name="name" use="required"/>
+        <xs:attribute type="groupType" name="status" use="required"/>
+    </xs:complexType>
+</xs:element>
+
+<xs:simpleType name="groupType">
+    <xs:restriction base="xs:string">
+        <xs:enumeration value="REGISTERING"/>
+        <xs:enumeration value="CURRENT"/>
+        <xs:enumeration value="FINISHED"/>
+    </xs:restriction>
+</xs:simpleType>
 </xs:schema>
