@@ -22,7 +22,7 @@ public class JaxbParserTest {
         JAXB_PARSER.setSchema(Schemas.ofClasspath("payload.xsd"));
     }
 
-    @Test
+    @org.junit.Test
     public void testPayload() throws Exception {
 //        JaxbParserTest.class.getResourceAsStream("/city.xml")
         Payload payload = JAXB_PARSER.unmarshal(

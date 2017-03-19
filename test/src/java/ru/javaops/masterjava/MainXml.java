@@ -8,10 +8,10 @@ import ru.javaops.masterjava.xml.schema.ObjectFactory;
 import ru.javaops.masterjava.xml.schema.Payload;
 import ru.javaops.masterjava.xml.schema.Project;
 import ru.javaops.masterjava.xml.schema.User;
-import util.JaxbParser;
-import util.Schemas;
-import util.StaxStreamProcessor;
-import util.XsltProcessor;
+import ru.javaops.masterjava.util.JaxbParser;
+import ru.javaops.masterjava.util.Schemas;
+import ru.javaops.masterjava.util.StaxStreamProcessor;
+import ru.javaops.masterjava.util.XsltProcessor;
 
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
