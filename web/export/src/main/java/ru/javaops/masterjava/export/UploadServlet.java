@@ -1,6 +1,8 @@
 package ru.javaops.masterjava.export;
 
 import org.thymeleaf.context.WebContext;
+import ru.javaops.masterjava.persist.DBIProvider;
+import ru.javaops.masterjava.persist.dao.UserDao;
 import ru.javaops.masterjava.persist.model.User;
 
 import javax.servlet.ServletException;
@@ -12,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.DriverManager;
 import java.util.List;
 
 import static ru.javaops.masterjava.export.ThymeleafListener.engine;
@@ -37,7 +40,13 @@ public class UploadServlet extends HttpServlet {
             Part filePart = req.getPart("fileToUpload");
             try (InputStream is = filePart.getInputStream()) {
                 List<User> users = userExport.process(is);
-                webContext.setVariable("users", users);
+
+                UserDao userDao = DBIProvider.getDao(UserDao.class);
+                userDao.clean();
+                users.forEach(userDao::insert);
+
+                webContext.setVariable("size", users.size());
+                webContext.setVariable("users", userDao.getWithLimit(20));
                 engine.process("result", webContext, resp.getWriter());
             }
         } catch (Exception e) {

@@ -2,9 +2,11 @@ package ru.javaops.masterjava.persist.dao;
 
 import com.bertoncelj.jdbi.entitymapper.EntityMapperFactory;
 import org.skife.jdbi.v2.sqlobject.*;
+import org.skife.jdbi.v2.sqlobject.customizers.BatchChunkSize;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import ru.javaops.masterjava.persist.model.User;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,18 +20,22 @@ public abstract class UserDao implements AbstractDao {
 
     public User insert(User user) {
         if (user.isNew()) {
-            int id = insertGeneratedId(user);
-            user.setId(id);
+            int[] id = insertGeneratedId(Collections.singletonList(user));
+            user.setId(id[0]);
         } else {
             insertWitId(user);
         }
         return user;
     }
 
-    @SqlUpdate("INSERT INTO users (full_name, email, flag) VALUES (:fullName, :email, CAST(:flag AS user_flag)) ")
+    @Transaction
+    @BatchChunkSize(100)
+    @SqlBatch("INSERT INTO users (full_name, email, flag) VALUES (:fullName, :email, CAST(:flag AS user_flag)) ")
     @GetGeneratedKeys
-    abstract int insertGeneratedId(@BindBean User user);
+    abstract int[] insertGeneratedId(@BindBean Iterable<User> users);
 
+    @Transaction
+    @BatchChunkSize(100)
     @SqlUpdate("INSERT INTO users (id, full_name, email, flag) VALUES (:id, :fullName, :email, CAST(:flag AS user_flag)) ")
     abstract void insertWitId(@BindBean User user);
 
