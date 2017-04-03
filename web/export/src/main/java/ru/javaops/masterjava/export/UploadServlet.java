@@ -3,6 +3,8 @@ package ru.javaops.masterjava.export;
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.context.WebContext;
+import ru.javaops.masterjava.persist.model.City;
+import ru.javaops.masterjava.persist.model.Group;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -24,6 +26,8 @@ public class UploadServlet extends HttpServlet {
     private static final int CHUNK_SIZE = 2000;
 
     private final UserExport userExport = new UserExport();
+    private final CityExport cityExport = new CityExport();
+    private final GroupExport groupExport = new GroupExport();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -40,16 +44,29 @@ public class UploadServlet extends HttpServlet {
             if (chunkSize < 1) {
                 message = "Chunk Size must be > 1";
             } else {
+                message = "";
                 Part filePart = req.getPart("fileToUpload");
+
+                List<UserExport.FailedEmail> failedUsers;
+                List<GroupExport.FailedName> failedGroups;
                 try (InputStream is = filePart.getInputStream()) {
-                    List<UserExport.FailedEmail> failed = userExport.process(is, chunkSize);
-                    log.info("Failed users: " + failed);
-                    final WebContext webContext =
-                            new WebContext(req, resp, req.getServletContext(), req.getLocale(),
-                                    ImmutableMap.of("failed", failed));
-                    engine.process("result", webContext, resp.getWriter());
-                    return;
+                    failedGroups = groupExport.process(is, chunkSize);
+                    log.info("Failed groups: " + failedGroups);
                 }
+                try (InputStream is = filePart.getInputStream()) {
+                    List<City> cities = cityExport.process(is);
+                    log.info("Loaded cities: " + cities);
+                }
+                try (InputStream is = filePart.getInputStream()) {
+                    failedUsers = userExport.process(is, chunkSize);
+                    log.info("Failed users: " + failedUsers);
+                }
+                final WebContext webContext =
+                        new WebContext(req, resp, req.getServletContext(), req.getLocale(),
+                                ImmutableMap.of(
+                                        "failed", failedUsers,
+                                        "failedGroups", failedGroups));
+                engine.process("result", webContext, resp.getWriter());
             }
         } catch (Exception e) {
             log.info(e.getMessage(), e);

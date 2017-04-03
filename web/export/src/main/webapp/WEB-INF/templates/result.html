@@ -10,5 +10,10 @@
     <!--/*@thymesVar id="failed" type="java.util.List<ru.javaops.masterjava.export.UserExport$FailedEmail>"*/-->
     <li th:each="fail: ${failed}" th:text="${fail}"></li>
 </ul>
+<ul>
+    <!--/*@thymesVar id="failedGroups" type="java.util.List<ru.javaops.masterjava.export.GroupExport$FailedName>"*/-->
+    <li th:each="fg: ${failedGroups}" th:text="${fg}"></li>
+</ul>
+
 </body>
 </html>
