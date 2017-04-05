@@ -5,15 +5,25 @@
 </head>
 <body>
 <h4><a href="">Export XML</a></h4>
-<h3>Failed users</h3>
+<!--/*@thymesVar id="failedProjects" type="java.util.List<ru.javaops.masterjava.export.ProjectExport$FailedName>"*/-->
+<h3 th:if="${!failedProjects.isEmpty()}">Failed projects</h3>
 <ul>
-    <!--/*@thymesVar id="failed" type="java.util.List<ru.javaops.masterjava.export.UserExport$FailedEmail>"*/-->
-    <li th:each="fail: ${failed}" th:text="${fail}"></li>
+    <li th:each="failedProject: ${failedProjects}" th:text="${failedProject}"></li>
 </ul>
+<!--/*@thymesVar id="failedGroups" type="java.util.List<ru.javaops.masterjava.export.GroupExport$FailedName>"*/-->
+<h3 th:if="${!failedGroups.isEmpty()}">Failed groups</h3>
 <ul>
-    <!--/*@thymesVar id="failedGroups" type="java.util.List<ru.javaops.masterjava.export.GroupExport$FailedName>"*/-->
-    <li th:each="fg: ${failedGroups}" th:text="${fg}"></li>
+    <li th:each="failedGroup: ${failedGroups}" th:text="${failedGroup}"></li>
 </ul>
-
+<!--/*@thymesVar id="failedCities" type="java.util.List<ru.javaops.masterjava.export.CityExport$Failed>"*/-->
+<h3 th:if="${!failedGroups.isEmpty()}">Failed cities</h3>
+<ul>
+    <li th:each="failedCity: ${failedCities}" th:text="${failedCity}"></li>
+</ul>
+<!--/*@thymesVar id="failedUsers" type="java.util.List<ru.javaops.masterjava.export.UserExport$FailedEmail>"*/-->
+<h3 th:if="${!failedUsers.isEmpty()}">Failed users</h3>
+<ul>
+    <li th:each="fail: ${failedUsers}" th:text="${fail}"></li>
+</ul>
 </body>
 </html>

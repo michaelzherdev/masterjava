@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.thymeleaf.context.WebContext;
 import ru.javaops.masterjava.persist.model.City;
 import ru.javaops.masterjava.persist.model.Group;
+import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -28,6 +29,7 @@ public class UploadServlet extends HttpServlet {
     private final UserExport userExport = new UserExport();
     private final CityExport cityExport = new CityExport();
     private final GroupExport groupExport = new GroupExport();
+    private final ProjectExport projectExport = new ProjectExport();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -49,23 +51,33 @@ public class UploadServlet extends HttpServlet {
 
                 List<UserExport.FailedEmail> failedUsers;
                 List<GroupExport.FailedName> failedGroups;
+                List<CityExport.Failed> failedCities;
+                List<ProjectExport.FailedName> failedProjects;
+
+                try (InputStream is = filePart.getInputStream()) {
+                    failedProjects = projectExport.process(is, chunkSize);
+                    log.info("Failed projects: " + failedProjects);
+                }
                 try (InputStream is = filePart.getInputStream()) {
                     failedGroups = groupExport.process(is, chunkSize);
                     log.info("Failed groups: " + failedGroups);
                 }
                 try (InputStream is = filePart.getInputStream()) {
-                    List<City> cities = cityExport.process(is);
-                    log.info("Loaded cities: " + cities);
+                    failedCities = cityExport.process(is, chunkSize);
+                    log.info("Failed cities: " + failedCities);
                 }
                 try (InputStream is = filePart.getInputStream()) {
                     failedUsers = userExport.process(is, chunkSize);
                     log.info("Failed users: " + failedUsers);
                 }
+
                 final WebContext webContext =
                         new WebContext(req, resp, req.getServletContext(), req.getLocale(),
                                 ImmutableMap.of(
-                                        "failed", failedUsers,
-                                        "failedGroups", failedGroups));
+                                        "failedProjects", failedProjects,
+                                        "failedGroups", failedGroups,
+                                        "failedCities", failedCities,
+                                        "failedUsers", failedUsers));
                 engine.process("result", webContext, resp.getWriter());
             }
         } catch (Exception e) {

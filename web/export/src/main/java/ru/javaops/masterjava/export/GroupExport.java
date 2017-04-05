@@ -40,22 +40,6 @@ public class GroupExport {
         }
     }
 
-//        public List<Group> process(final InputStream is, int chunkSize) throws XMLStreamException {
-//            final StaxStreamProcessor processor = new StaxStreamProcessor(is);
-//            List<Group> groups = new ArrayList<>();
-//
-//            int id = groupDao.getSeqAndSkip(chunkSize);
-//
-//            while (processor.doUntil(XMLEvent.START_ELEMENT, "Group")) {
-//                final String name = processor.getAttribute("name");
-//                final GroupType type = GroupType.valueOf(processor.getAttribute("type"));
-//                final Group group = new Group(id, name, type);
-//                executorService.submit(() -> groupDao.insert(group));
-//                groups.add(group);
-//            }
-//            return groups;
-//        }
-
     public List<FailedName> process(final InputStream is, int chunkSize) throws XMLStreamException {
         log.info("Start proseccing with chunkSize=" + chunkSize);
 
@@ -84,7 +68,7 @@ public class GroupExport {
                 while (processor.doUntil(XMLEvent.START_ELEMENT, "Group")) {
                     final String name = processor.getAttribute("name");
                     final GroupType type = GroupType.valueOf(processor.getAttribute("type"));
-                    final Group group = new Group(id, name, type);
+                    final Group group = new Group(id++, name, type);
 
                     chunk.add(group);
                     if (chunk.size() == chunkSize) {
