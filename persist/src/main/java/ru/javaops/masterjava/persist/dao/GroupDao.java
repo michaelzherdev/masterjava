@@ -1,8 +1,10 @@
 package ru.javaops.masterjava.persist.dao;
 
+import com.bertoncelj.jdbi.entitymapper.EntityMapperFactory;
 import one.util.streamex.IntStreamEx;
 import org.skife.jdbi.v2.sqlobject.*;
 import org.skife.jdbi.v2.sqlobject.customizers.BatchChunkSize;
+import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.model.Group;
 
@@ -11,6 +13,7 @@ import java.util.List;
 /**
  * Created by Mikhail on 02.04.2017.
  */
+@RegisterMapperFactory(EntityMapperFactory.class)
 public abstract class GroupDao implements AbstractDao {
 
     public Group insert(Group group) {
@@ -46,6 +49,9 @@ public abstract class GroupDao implements AbstractDao {
 
     @SqlQuery("SELECT * FROM groups ORDER BY id")
     public abstract List<Group> getAll();
+
+    @SqlQuery("SELECT * FROM groups WHERE name=:it")
+    public abstract Group getByName(@Bind String name);
 
     @SqlUpdate("TRUNCATE groups")
     @Override

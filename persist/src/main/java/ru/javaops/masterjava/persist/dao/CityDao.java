@@ -23,6 +23,9 @@ public abstract class CityDao implements AbstractDao {
     @SqlQuery("SELECT * FROM cities ORDER BY id")
     public abstract List<City> getAll();
 
+    @SqlQuery("SELECT * FROM cities WHERE id_str=:it")
+    public abstract City getByIdStr(@Bind String idStr);
+
     @SqlUpdate("TRUNCATE cities")
     @Override
     public abstract void clean();

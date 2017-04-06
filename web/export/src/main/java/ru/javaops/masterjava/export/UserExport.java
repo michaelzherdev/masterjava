@@ -4,20 +4,17 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import one.util.streamex.StreamEx;
 import ru.javaops.masterjava.persist.DBIProvider;
+import ru.javaops.masterjava.persist.dao.CityDao;
+import ru.javaops.masterjava.persist.dao.GroupDao;
 import ru.javaops.masterjava.persist.dao.UserDao;
-import ru.javaops.masterjava.persist.model.User;
-import ru.javaops.masterjava.persist.model.UserFlag;
+import ru.javaops.masterjava.persist.model.*;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.*;
+import java.util.concurrent.*;
 
 /**
  * gkislin
@@ -29,6 +26,8 @@ public class UserExport {
     private static final int NUMBER_THREADS = 4;
     private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_THREADS);
     private final UserDao userDao = DBIProvider.getDao(UserDao.class);
+    private final CityDao cityDao = DBIProvider.getDao(CityDao.class);
+    private final GroupDao groupDao = DBIProvider.getDao(GroupDao.class);
 
     @Value
     public static class FailedEmail {
@@ -66,17 +65,28 @@ public class UserExport {
                 List<User> chunk = new ArrayList<>(chunkSize);
                 final StaxStreamProcessor processor = new StaxStreamProcessor(is);
 
+                Map<User, List<String>> map = new ConcurrentHashMap<>();
                 while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
                     final String email = processor.getAttribute("email");
                     final UserFlag flag = UserFlag.valueOf(processor.getAttribute("flag"));
+                    City city = cityDao.getByIdStr(processor.getAttribute("city"));
+                    final int cityIdStr = city.getId();
+
+                    final String groupRefs = processor.getAttribute("groupRefs");
                     final String fullName = processor.getReader().getElementText();
-                    final User user = new User(id++, fullName, email, flag);
+                    final User user = new User(id++, fullName, email, flag, cityIdStr);
+                    if (groupRefs != null) {
+//                        groups.addAll(Arrays.asList(groupRefs.split(" ")));
+                        map.put(user, Arrays.asList(groupRefs.split(" ")));
+                    }
+
                     chunk.add(user);
                     if (chunk.size() == chunkSize) {
                         futures.add(submit(chunk));
                         chunk = new ArrayList<>(chunkSize);
                         id = userDao.getSeqAndSkip(chunkSize);
                     }
+
                 }
 
                 if (!chunk.isEmpty()) {
@@ -88,11 +98,28 @@ public class UserExport {
                     try {
                         failed.addAll(StreamEx.of(cf.future.get()).map(email -> new FailedEmail(email, "already present")).toList());
                         log.info(cf.emailRange + " successfully executed");
+
+                        cf.future.get().forEach(email -> {
+                            map.forEach((k, v) -> {
+                                if (k.getEmail().equals(email))
+                                    map.remove(k);
+
+                            });
+                        });
+
+                        map.forEach((k, v) -> {
+                            for (String s : map.get(k)) {
+                                Group group = groupDao.getByName(s);
+                                userDao.insertUsersGroups(new UserGroupDTO(k.getId(), group.getId()));
+
+                            }
+                        });
                     } catch (Exception e) {
                         log.error(cf.emailRange + " failed", e);
                         failed.add(new FailedEmail(cf.emailRange, e.toString()));
                     }
                 });
+
                 return failed;
             }
 

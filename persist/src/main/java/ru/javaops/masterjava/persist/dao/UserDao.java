@@ -7,6 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.BatchChunkSize;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapperFactory;
 import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.model.User;
+import ru.javaops.masterjava.persist.model.UserGroupDTO;
 
 import java.util.List;
 
@@ -28,6 +29,9 @@ public abstract class UserDao implements AbstractDao {
         }
         return user;
     }
+
+    @SqlQuery("SELECT MAX(id) from users")
+    public abstract int getMaxId();
 
     @SqlQuery("SELECT nextval('user_seq')")
     abstract int getNextVal();
@@ -68,4 +72,7 @@ public abstract class UserDao implements AbstractDao {
                 .mapToObj(index -> users.get(index).getEmail())
                 .toList();
     }
+
+    @SqlUpdate("INSERT INTO user_groups (user_id, group_id) VALUES (:userId, :groupId) ON CONFLICT DO NOTHING")
+    public abstract void insertUsersGroups(@BindBean UserGroupDTO dto);
 }
