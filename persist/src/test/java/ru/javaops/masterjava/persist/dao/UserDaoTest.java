@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import ru.javaops.masterjava.persist.UserTestData;
+import ru.javaops.masterjava.persist.dao.UserDao;
 import ru.javaops.masterjava.persist.model.User;
 
 import java.util.List;
@@ -34,13 +35,13 @@ public class UserDaoTest extends AbstractDaoTest<UserDao> {
     @Test
     public void getWithLimit() {
         List<User> users = dao.getWithLimit(5);
-        Assert.assertEquals(FIST5_USERS, users);
+        Assert.assertEquals(UserTestData.FIST5_USERS, users);
     }
 
     @Test
     public void insertBatch() throws Exception {
         dao.clean();
-        dao.insertBatch(FIST5_USERS, 3);
+        dao.insertBatch(UserTestData.FIST5_USERS, 3);
         Assert.assertEquals(5, dao.getWithLimit(100).size());
     }
 

@@ -2,6 +2,7 @@ package ru.javaops.masterjava.persist;
 
 import com.typesafe.config.Config;
 import ru.javaops.masterjava.config.Configs;
+import ru.javaops.masterjava.persist.DBIProvider;
 
 import java.sql.DriverManager;
 
