@@ -5,14 +5,14 @@ import one.util.streamex.StreamEx;
 import ru.javaops.masterjava.export.PayloadImporter.FailedEmail;
 import ru.javaops.masterjava.persist.DBIProvider;
 import ru.javaops.masterjava.persist.dao.UserDao;
-import ru.javaops.masterjava.persist.model.City;
-import ru.javaops.masterjava.persist.model.User;
-import ru.javaops.masterjava.persist.model.UserFlag;
+import ru.javaops.masterjava.persist.dao.UserGroupDao;
+import ru.javaops.masterjava.persist.model.*;
 import ru.javaops.masterjava.xml.util.StaxStreamProcessor;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -30,8 +30,9 @@ public class UserImporter {
     private static final int NUMBER_THREADS = 4;
     private final ExecutorService executorService = Executors.newFixedThreadPool(NUMBER_THREADS);
     private final UserDao userDao = DBIProvider.getDao(UserDao.class);
+    private final UserGroupDao userGroupDao = DBIProvider.getDao(UserGroupDao.class);
 
-    public List<FailedEmail> process(StaxStreamProcessor processor, Map<String, City> cities, int chunkSize) throws XMLStreamException {
+    public List<FailedEmail> process(StaxStreamProcessor processor, Map<String, City> cities, Map<String, Group> groups, int chunkSize) throws XMLStreamException {
         log.info("Start proseccing with chunkSize=" + chunkSize);
 
         return new Callable<List<FailedEmail>>() {
@@ -55,17 +56,34 @@ public class UserImporter {
                 int id = userDao.getSeqAndSkip(chunkSize);
                 List<User> chunk = new ArrayList<>(chunkSize);
                 List<FailedEmail> failed = new ArrayList<>();
+                List<UserGroup> userGroups = new ArrayList<>();
 
                 while (processor.doUntil(XMLEvent.START_ELEMENT, "User")) {
                     final String email = processor.getAttribute("email");
                     String cityRef = processor.getAttribute("city");
                     City city = cities.get(cityRef);
+
                     if (city == null) {
                         failed.add(new FailedEmail(email, "City '" + cityRef + "' is not present in DB"));
                     } else {
                         final UserFlag flag = UserFlag.valueOf(processor.getAttribute("flag"));
+                        final String groupRefs = processor.getAttribute("groupRefs");
                         final String fullName = processor.getReader().getElementText();
+
                         final User user = new User(id++, fullName, email, flag, city.getId());
+
+                        if (groupRefs != null) {
+                            List<String> groupRefsList = Arrays.asList(groupRefs.split(" "));
+                            for (String groupRef : groupRefsList) {
+                                Group group = groups.get(groupRef);
+                                if (group == null) {
+                                    failed.add(new FailedEmail(email, "Group '" + groupRef + "' is not present in DB"));
+                                } else {
+
+                                    userGroups.add(new UserGroup(id - 1, group.getId()));
+                                }
+                            }
+                        }
                         chunk.add(user);
                         if (chunk.size() == chunkSize) {
                             futures.add(submit(chunk));
@@ -82,12 +100,25 @@ public class UserImporter {
                 futures.forEach(cf -> {
                     try {
                         failed.addAll(StreamEx.of(cf.future.get()).map(email -> new FailedEmail(email, "already present")).toList());
+
+                        cf.future.get().forEach(email -> {
+                            User user = userDao.getByMail(email);
+                            userGroups.forEach((ug) -> {
+                                if (user != null && ug.getUserId().equals(user.getId()))
+                                    userGroups.remove(user);
+
+                            });
+                        });
+
                         log.info(cf.emailRange + " successfully executed");
                     } catch (Exception e) {
                         log.error(cf.emailRange + " failed", e);
                         failed.add(new FailedEmail(cf.emailRange, e.toString()));
                     }
                 });
+
+                log.info("UserGroup inserted " + userGroups);
+                userGroupDao.insertBatch(userGroups);
                 return failed;
             }
 

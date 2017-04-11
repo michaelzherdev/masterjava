@@ -1,13 +1,16 @@
 package ru.javaops.masterjava.persist;
 
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.ds.PGPoolingDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.logging.SLF4JLog;
 import org.skife.jdbi.v2.tweak.ConnectionFactory;
 import ru.javaops.masterjava.persist.dao.AbstractDao;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+import java.util.Properties;
 
 /**
  * gkislin
@@ -30,7 +33,7 @@ public class DBIProvider {
                 try {
                     log.info("Init jDBI with  JNDI");
                     InitialContext ctx = new InitialContext();
-                    dbi = new DBI((DataSource) ctx.lookup("java:/comp/env/jdbc/masterjava"));
+                    dbi = new DBI((DataSource)ctx.lookup("java:/comp/env/jdbc/masterjava"));
                 } catch (Exception ex) {
                     throw new IllegalStateException("PostgreSQL initialization failed", ex);
                 }
