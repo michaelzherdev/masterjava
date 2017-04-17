@@ -89,4 +89,15 @@
             </exclusions>
         </dependency>
     </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>${masterjava.config}</directory>
+                <includes>
+                    <include>wsdl/mailService.wsdl</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 </project>
