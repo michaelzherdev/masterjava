@@ -24,11 +24,11 @@ public class MailWSClient {
     }
 
 
-    public static String sendToGroup(final Set<Addressee> to, final Set<Addressee> cc, final String subject, final String body) throws WebStateException {
+    public static String sendToGroup(final Set<Addressee> to, final Set<Addressee> cc, final String subject, final String body, final String attachment, String attachmentName) throws WebStateException {
         log.info("Send mail to '" + to + "' cc '" + cc + "' subject '" + subject + (log.isDebugEnabled() ? "\nbody=" + body : ""));
         String status;
         try {
-            status = WS_CLIENT.getPort().sendToGroup(to, cc, subject, body);
+            status = WS_CLIENT.getPort().sendToGroup(to, cc, subject, body, attachment, attachmentName);
             log.info("Sent with status: " + status);
         } catch (Exception e) {
             log.error("sendToGroup failed", e);
@@ -37,11 +37,11 @@ public class MailWSClient {
         return status;
     }
 
-    public static GroupResult sendBulk(final Set<Addressee> to, final String subject, final String body) throws WebStateException {
+    public static GroupResult sendBulk(final Set<Addressee> to, final String subject, final String body, final String attachment, String attachmentName) throws WebStateException {
         log.info("Send mail to '" + to + "' subject '" + subject + (log.isDebugEnabled() ? "\nbody=" + body : ""));
         GroupResult result;
         try {
-            result = WS_CLIENT.getPort().sendBulk(to, subject, body);
+            result = WS_CLIENT.getPort().sendBulk(to, subject, body, attachment, attachmentName);
         } catch (WebStateException e) {
             log.error("sendBulk failed", e);
             throw WsClient.getWebStateException(e);

@@ -11,7 +11,7 @@ public class MailWSClientMain {
                 new Addressee("Мастер Java <masterjava@javaops.ru>"),
                 new Addressee("Bad Email <bad_email.ru>"));
         try {
-            String state = MailWSClient.sendToGroup(addressees, ImmutableSet.of(), "Subject", "Body");
+            String state = MailWSClient.sendToGroup(addressees, ImmutableSet.of(), "Subject", "Body", "", "");
             System.out.println(state);
         } catch (Throwable e) {
             log.error(e.toString(), e);

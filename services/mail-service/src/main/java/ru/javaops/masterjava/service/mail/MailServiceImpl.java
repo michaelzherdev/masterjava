@@ -11,12 +11,12 @@ import java.util.Set;
 public class MailServiceImpl implements MailService {
 
     @Override
-    public String sendToGroup(Set<Addressee> to, Set<Addressee> cc, String subject, String body) throws WebStateException {
-        return MailSender.sendToGroup(to, cc, subject, body);
+    public String sendToGroup(Set<Addressee> to, Set<Addressee> cc, String subject, String body, String attachment, String attachmentName) throws WebStateException {
+        return MailSender.sendToGroup(to, cc, subject, body, attachment, attachmentName);
     }
 
     @Override
-    public GroupResult sendBulk(Set<Addressee> to, String subject, String body) throws WebStateException {
-        return MailServiceExecutor.sendBulk(to, subject, body);
+    public GroupResult sendBulk(Set<Addressee> to, String subject, String body, String attachment, String attachmentName) throws WebStateException {
+        return MailServiceExecutor.sendBulk(to, subject, body, attachment, attachmentName);
     }
 }

@@ -1,10 +1,7 @@
 package ru.javaops.masterjava.service.mail;
 
 import com.typesafe.config.Config;
-import org.apache.commons.mail.DefaultAuthenticator;
-import org.apache.commons.mail.Email;
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
+import org.apache.commons.mail.*;
 import ru.javaops.masterjava.config.Configs;
 
 import javax.mail.Authenticator;
@@ -52,6 +49,12 @@ public class MailConfig {
 
     public static HtmlEmail createHtmlEmail() throws EmailException {
         return INSTANCE.prepareEmail(new HtmlEmail());
+    }
+
+    public static MultiPartEmail createMultiPartEmail() throws EmailException {
+
+        MultiPartEmail multiPartEmail = INSTANCE.prepareEmail(new MultiPartEmail());
+        return multiPartEmail;
     }
 
     @Override

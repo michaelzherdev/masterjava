@@ -23,6 +23,13 @@
         <dependency.locations.enabled>false</dependency.locations.enabled>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://github.com/michaelzherdev/masterjava.git</connection>
+        <developerConnection>scm:git:https://github.com/michaelzherdev/masterjava.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/michaelzherdev/masterjava.git</url>
+    </scm>
+
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>
@@ -60,6 +67,24 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- https://habrahabr.ru/post/310738/ -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <doCheck>false</doCheck>
+                    <doUpdate>false</doUpdate>
+                </configuration>
             </plugin>
         </plugins>
 

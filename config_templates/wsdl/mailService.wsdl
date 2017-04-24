@@ -11,63 +11,58 @@
         <xs:schema targetNamespace="http://mail.javaops.ru/">
             <xs:import namespace="http://common.javaops.ru/" schemaLocation="common.xsd"/>
 
-            <xs:element name="sendToGroup" type="tns:sendToGroup"/>
-            <xs:element name="sendToGroupResponse" type="tns:sendToGroupResponse"/>
             <xs:element name="sendBulk" type="tns:sendBulk"/>
             <xs:element name="sendBulkResponse" type="tns:sendBulkResponse"/>
-
+            <xs:element name="sendToGroup" type="tns:sendToGroup"/>
+            <xs:element name="sendToGroupResponse" type="tns:sendToGroupResponse"/>
+            <xs:complexType name="sendBulk">
+                <xs:sequence>
+                    <xs:element name="to" type="tns:addressee" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="subject" type="xs:string" minOccurs="0"/>
+                    <xs:element name="body" type="xs:string" minOccurs="0"/>
+                    <xs:element name="attachment" type="xs:string" minOccurs="0"/>
+                    <xs:element name="attachment_name" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="addressee">
+                <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                        <xs:attribute name="email" type="xs:string"/>
+                    </xs:extension>
+                </xs:simpleContent>
+            </xs:complexType>
+            <xs:complexType name="sendBulkResponse">
+                <xs:sequence>
+                    <xs:element name="return" type="tns:groupResult" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="groupResult">
+                <xs:sequence>
+                    <xs:element name="failed" type="tns:mailResult" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="failedCause" type="xs:string" minOccurs="0"/>
+                    <xs:element name="success" type="xs:int"/>
+                </xs:sequence>
+            </xs:complexType>
+            <xs:complexType name="mailResult">
+                <xs:sequence>
+                    <xs:element name="email" type="xs:string" minOccurs="0"/>
+                    <xs:element name="result" type="xs:string" minOccurs="0"/>
+                </xs:sequence>
+            </xs:complexType>
             <xs:complexType name="sendToGroup">
                 <xs:sequence>
                     <xs:element name="to" type="tns:addressee" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="cc" type="tns:addressee" minOccurs="0" maxOccurs="unbounded"/>
                     <xs:element name="subject" type="xs:string" minOccurs="0"/>
-                    <xs:element name="body" type="xs:string" minOccurs="1"/>
+                    <xs:element name="body" type="xs:string" minOccurs="0"/>
+                    <xs:element name="attachment" type="xs:string" minOccurs="0"/>
+                    <xs:element name="attachment_name" type="xs:string" minOccurs="0"/>
                 </xs:sequence>
             </xs:complexType>
             <xs:complexType name="sendToGroupResponse">
                 <xs:sequence>
-                    <xs:element name="status" type="xs:string" minOccurs="0"/>
+                    <xs:element name="return" type="xs:string" minOccurs="0"/>
                 </xs:sequence>
-            </xs:complexType>
-
-            <xs:complexType name="sendBulk">
-                <xs:sequence>
-                    <xs:element name="to" type="tns:addressee" minOccurs="0" maxOccurs="unbounded"/>
-                    <xs:element name="subject" type="xs:string" minOccurs="0"/>
-                    <xs:element name="body" type="xs:string" minOccurs="1"/>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="sendBulkResponse">
-                <xs:sequence>
-                    <xs:element name="groupResult" minOccurs="0">
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="failed" type="tns:mailResult" nillable="true" minOccurs="0" maxOccurs="unbounded"/>
-                                <xs:element name="failedCause" type="xs:string" minOccurs="0"/>
-                                <xs:element name="success" type="xs:int"/>
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:sequence>
-            </xs:complexType>
-            <xs:complexType name="mailResult">
-                <xs:simpleContent>
-                    <xs:extension base="xs:string">
-                        <xs:attribute type="xs:string" name="email"/>
-                    </xs:extension>
-                </xs:simpleContent>
-            </xs:complexType>
-
-            <xs:complexType name="addressee">
-                <xs:simpleContent>
-                    <xs:extension base="xs:string">
-                        <xs:attribute type="xs:string" name="email"/>
-                    </xs:extension>
-                </xs:simpleContent>
-            </xs:complexType>
-
-            <xs:complexType name="sendMailResponse">
-                <xs:sequence/>
             </xs:complexType>
         </xs:schema>
     </types>
