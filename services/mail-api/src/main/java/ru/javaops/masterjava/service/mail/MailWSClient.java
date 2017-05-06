@@ -4,8 +4,10 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
+import com.typesafe.config.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
+import ru.javaops.masterjava.config.Configs;
 import ru.javaops.web.AuthUtil;
 import ru.javaops.web.WebStateException;
 import ru.javaops.web.WsClient;
@@ -18,12 +20,11 @@ import java.util.Set;
 
 @Slf4j
 public class MailWSClient {
-    private static final WsClient<MailService> WS_CLIENT;
-    public static final String USER = "user";
-    public static final String PASSWORD = "password";
-    private static final SoapClientLoggingHandler LOGGING_HANDLER = new SoapClientLoggingHandler(Level.DEBUG);
+    private static Config config = Configs.getConfig("hosts.conf", "mail");
 
-    public static String AUTH_HEADER = AuthUtil.encodeBasicAuthHeader(USER, PASSWORD);
+    private static final WsClient<MailService> WS_CLIENT;
+    private static final SoapClientLoggingHandler LOGGING_HANDLER = new SoapClientLoggingHandler(Level.valueOf(config.getString("debug.client")));
+
 
     static {
         WS_CLIENT = new WsClient<MailService>(Resources.getResource("wsdl/mailService.wsdl"),
@@ -62,7 +63,7 @@ public class MailWSClient {
 
     private static MailService getPort() {
         MailService port = WS_CLIENT.getPort(new MTOMFeature(1024));
-        WsClient.setAuth(port, USER, PASSWORD);
+        WsClient.setAuth(port, config.getString("user"), config.getString("password"));
         WsClient.setHandler(port, LOGGING_HANDLER);
         return port;
     }

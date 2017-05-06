@@ -4,12 +4,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.ws.handler.MessageContext;
 import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class AuthUtil {
-    private static final String AUTHORIZATION = "Authorization";
+    public static final String AUTHORIZATION = "Authorization";
 
     public static String encodeBasicAuthHeader(String name, String passw) {
         String authString = name + ":" + passw;
